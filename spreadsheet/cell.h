@@ -31,6 +31,10 @@ private:
     bool CheckForCyclicity(const Impl& impl) const;
     void DoInvalidCache(bool check_changes = false);
 
+    void RemoveDependenciesFrom(Cell* cell);
+    void RemoveDependency(Cell* cell);
+    void AddDependency(Cell* cell);
+
     std::unique_ptr<Impl> impl_;
 
     Sheet& sheet_;
