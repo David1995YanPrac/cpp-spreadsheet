@@ -158,7 +158,9 @@ public:
                 result = lhs_->Evaluate(args) / rhs_->Evaluate(args);
                 break;
             }
-        if (!std::isfinite(result)) throw FormulaError{ FormulaError::Category::Arithmetic };
+        if (!std::isfinite(result)) {
+            throw FormulaError{ FormulaError::Category::Arithmetic };
+        }
 
         return result;
     }
