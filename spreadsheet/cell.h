@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <unordered_set>
+#include <optional>
 
 class Sheet;
 
@@ -27,10 +28,12 @@ private:
     class EmptyImpl;
     class TextImpl;
     class FormulaImpl;
+    bool CheckForCyclicity(const Impl& impl) const;
+    void DoInvalidCache(bool check_changes = false);
 
     std::unique_ptr<Impl> impl_;
 
-    // Добавьте поля и методы для связи с таблицей, проверки циклических 
-    // зависимостей, графа зависимостей и т. д.
-
+    Sheet& sheet_;
+    std::unordered_set<Cell*> left_nods_;
+    std::unordered_set<Cell*> right_nods_;
 };
