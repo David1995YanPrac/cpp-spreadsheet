@@ -142,6 +142,20 @@ void Cell::DoInvalidCache(bool check_changes) {
     }
 }
 
+void Cell::RemoveDependenciesFrom(Cell* cell) {
+    for (Cell* outgoing : right_nods_) {
+        outgoing->RemoveDependency(cell);
+    }
+}
+
+void Cell::RemoveDependency(Cell* cell) {
+    left_nods_.erase(cell);
+}
+
+void Cell::AddDependency(Cell* cell) {
+    left_nods_.insert(cell);
+}
+
 Cell::Cell(Sheet& sheet)
     : impl_(std::make_unique<EmptyImpl>())
     , sheet_(sheet) {}
@@ -164,13 +178,11 @@ void Cell::Set(std::string text) {
     if (CheckForCyclicity(*impl)) {
         throw CircularDependencyException("");
     }
+    
+    // Удаляем зависимости от текущей ячейки перед изменением
+    RemoveDependenciesFrom(this);
+
     impl_ = std::move(impl);
-
-    for (Cell* outgoing : right_nods_) {
-        outgoing->left_nods_.erase(this);
-    }
-
-    right_nods_.clear();
 
     for (const auto& pos : impl_->GetReferencedCells()) {
         Cell* outgoing = sheet_.GetCellPtr(pos);
@@ -179,14 +191,17 @@ void Cell::Set(std::string text) {
             outgoing = sheet_.GetCellPtr(pos);
         }
         right_nods_.insert(outgoing);
-        outgoing->left_nods_.insert(this);
+
+        // Добавляем новую зависимость
+        outgoing->AddDependency(this);
     }
 
     DoInvalidCache(true);
 }
 
+//поправил на вызов сет с пустой строкой 
 void Cell::Clear() {
-    impl_ = std::make_unique<EmptyImpl>();
+    Set("");
 }
 
 Cell::Value Cell::GetValue() const {
